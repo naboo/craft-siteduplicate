@@ -1,0 +1,41 @@
+# phpstorm project files
+.idea
+
+# netbeans project files
+nbproject
+
+# zend studio for eclipse project files
+.buildpath
+.project
+.settings
+
+# sublime text project / workspace files
+*.sublime-project
+*.sublime-workspace
+sftp-config.json
+
+# windows thumbnail cache
+Thumbs.db
+
+# composer itself is not needed
+composer.phar
+
+# composer.lock in applications is ignored since it's automatically created by composer when application is installed
+/apps/*/composer.lock
+
+# Mac DS_Store Files
+.DS_Store
+
+# phpunit itself is not needed
+phpunit.phar
+/phpunit.xml
+
+# NPM packages
+/node_modules
+
+# sass cache
+.sass-cache
+
+# craft default .gitignore
+/.env
+/vendor
