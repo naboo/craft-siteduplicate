@@ -1,5 +1,5 @@
 <?php
-namespace naboov\siteduplicate\helpers;
+namespace naboo\siteduplicate\helpers;
 
 use Craft;
 

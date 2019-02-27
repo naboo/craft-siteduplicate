@@ -70,7 +70,7 @@ class DuplicateController extends BaseEntriesController
 
         $newSiteId = $request->getBodyParam('duplicateSiteId', $entry->siteId); // SET SITE ID -------------------------------------------- * EDITED *
 
-        if($newSiteId == null || $newSiteId == "" || $newSiteId == 0 || $newSiteId == "0") // DON'T HAVE A SITE ID? ----------------------- * EDITED *
+        if($newSiteId == null || $newSiteId == "" || $newSiteId == 0 || $newSiteId == "0" || $newSiteId == "-") // DON'T HAVE A SITE ID? ----------------------- * EDITED *
         {
             Craft::$app->getSession()->setError(Craft::t('siteduplicate', 'No Site selected.'));
 

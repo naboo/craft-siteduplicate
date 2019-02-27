@@ -39,6 +39,7 @@ class SiteDuplicateService extends Component
         $section = $entry->getSection();
         $siteIds = $section->getSiteIds();
         $allSites = Craft::$app->sites->allSites;
+        $currentSite = "";
 
         foreach($allSites as $site)
         {
@@ -46,7 +47,15 @@ class SiteDuplicateService extends Component
             {
                 $sites[$site->id] = $site->name;
             }
+
+            if($entry->siteId == $site->id)
+            {
+                $currentSite = $site->name;
+            }
         }
+
+        $sites["-"] = "-";
+        $sites[$entry->siteId] = $currentSite." (".Craft::t('siteduplicate', 'current').")";
 
         return $sites;
     }
