@@ -2,6 +2,8 @@
 
 Site Duplicate let's you duplicate entries across Sites in Craft CMS. It even works when section entries aren't set to *propagate across site sections* making it easy to duplicate entry data between Sites.
 
+![Screenshot](resources/images/icon.png)
+
 ## Contents
 
 - [License](#license)
@@ -65,3 +67,5 @@ Another limitation is that all entries being duplicated will always duplicate to
 ## Credits
 
 Brought to you by [Johan Strömqvist](http://www.naboovalley.com)
+
+Big thanks to Pixel&Tonic for making an amazing CMS. Site Duplicate also uses a lot of code from Craft core.
