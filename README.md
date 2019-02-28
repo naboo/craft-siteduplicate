@@ -32,9 +32,9 @@ You can also install Site Duplicate via the **Plugin Store** in the Craft Contro
 
 The plugin enables you to add a sidebar widget to selected sections for which you would like to be able to duplicate entries across Sites. The widget will display available Sites for the current section. 
 
-![Screenshot](resources/images/sidebar-widget.png)
+![Screenshot](resources/images/sidebar-widget.jpg)
 
-**Notice!** Some limitations need to be kept in mind - please see the [Known limitations](#known-limitations) section for more info.
+> **Notice!** Some limitations need to be kept in mind - please see the [Known limitations](#known-limitations) section for more info.
 
 ### Issues
 
@@ -42,21 +42,25 @@ Please report any bugs/issues you find to the [Issues](https://github.com/naboo/
 
 ## Known limitations
 
-There are some things to keep in mind when duplicating entries across Site sections. Here's a list of known limitations - and potential workarounds - to keep in mind before duplicating.
+There are some things to keep in mind when duplicating entries across Site sections. 
 
-### Issues with element relations
+Here's a list of known limitations - and potential workarounds - to keep in mind before duplicating.
 
-If the Site you are duplicating to is set to not have its entries propagated scross site sections the Site might not be able to have the same type of relations as the Site you are duplicating from. For example you might want to duplicate a "page entry" from Site A which has an *Entries* relations field. The field might have a relation to another "page entry" in Site A. When duplicating the entry to Site B this relation isn't available to Site B since the related entry exists only in Site A. This will cause Craft to throw a *validation error* when duplicating the entry, leaving the duplicated entry in Site A.
+### 1. Issues with element relations
 
-But there is a workaround. Before duplicating the entry from Site A you can remove/disable the relation since the plugin will actually duplicate what's on the screen - not what's in the database. So let's say you want to duplicate an entry that has a relation - before duplicating the entry you'll just remove the relation (only on screen - you don't need to save the entry in Site A) like this:
+If the Site you are duplicating to is set to not have its entries *propagated scross site sections* the Site might not be able to have the same type of relations as the Site you are duplicating from. 
 
-![Screenshot](resources/images/limitation-relations.png)
+For example you might want to duplicate an entry from **Site A** which has an *Entries* relations field. The field might have a relation to another entry in **Site A**. When duplicating the entry to **Site B** the relation isn't available in **Site B** since the related entry exists only in **Site A** (this goes for all relations, entries, assets, categories...). This will cause Craft to throw a *validation error* when duplicating the entry, leaving the duplicated entry in Site A.
 
-Then you duplicate the entry and Craft will be able to duplicate the entry data to another Site.
+But there is a workaround. Before duplicating the entry from **Site A** you can remove/disable the relation since the plugin will actually duplicate what's on the screen - not what's in the database. So let's say you want to duplicate an entry that has a relation - before duplicating the entry you'll just remove/disable the relation (only on screen - you don't need to save the entry in **Site A**) like this:
 
-### Duplicated entries can't support parent entries
+![Screenshot](resources/images/limitation-relations.jpg)
 
-Another limitation is that all entries being duplicated will always duplicate to the root level of the section. So if the section you are duplicating within is a Structure and sits at level 2 in Site A the duplicated entry will always duplicate to the root level in Site B - this is to prevent Craft from throwing errors if the section hasn't the same entry setup between Sites.
+... then you duplicate the entry and Craft will be able to duplicate the entry data to another Site.
+
+### 2. Parent entries (structures) aren't supported when duplicating
+
+Another limitation is that all entries being duplicated will always duplicate to the root level of the section. So if the section you are duplicating within is a Structure and sits at level 2 in **Site A** the duplicated entry will always duplicate to the root level in **Site B**. This is to prevent Craft from throwing errors if the section hasn't the same entry setup between Sites. It's almost the same logic as the limitation with relations. If the relation isn't there - it can't be duplicated.
 
 ## Credits
 
