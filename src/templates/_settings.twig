@@ -1,0 +1,10 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.checkboxGroupField({
+	first: true,
+    label: 'Sections'|t('siteduplicate'),
+    instructions: 'Select which sections to enabled duplication.'|t('siteduplicate'),
+    name: 'enabledSections',
+    options: sections,
+    values: settings.enabledSections,
+}) }}

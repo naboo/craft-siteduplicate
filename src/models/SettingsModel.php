@@ -21,7 +21,15 @@ class SettingsModel extends Model
     // Public Properties
     // =========================================================================
 
+    /**
+     * @var Plugin Name
+     */
     public $pluginName = "Site Duplicate";
+
+    /**
+     * @var array
+     */
+    public $enabledSections = [];
 
     // Inheritance
     // =========================================================================
@@ -31,14 +39,10 @@ class SettingsModel extends Model
      */
     public function rules()
     {
-        /*return [
-            [
-                [
-                    'var'
-                ], 
-                'required'
-            ],
-        ];*/
+        return [
+            // Safe
+            [['enabledSections'], 'safe'],
+        ];
 
         return [];
     }

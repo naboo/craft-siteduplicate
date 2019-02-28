@@ -6,7 +6,11 @@
     "keywords": [
         "craft",
         "cms",
-        "craftcms"
+        "craftcms",
+        "duplicate",
+        "site",
+        "sites",
+        "entry"
     ],
     "license": "MIT",
     "authors": [
@@ -15,6 +19,10 @@
             "homepage": "http://www.naboovalley.com"
         }
     ],
+    "support": {
+        "docs": "https://github.com/naboo/craft-siteduplicate/blob/master/README.md",
+        "issues": "https://github.com/naboo/craft-siteduplicate/issues"
+    },
     "require": {
         "craftcms/cms": "^3.0.0"
     },
@@ -26,7 +34,7 @@
     "extra": {
         "name": "Site Duplicate",
         "handle": "siteduplicate",
-        "hasCpSettings": false,
+        "hasCpSettings": true,
         "hasCpSection": false,
         "changelogUrl": "https://raw.githubusercontent.com/naboo/craft-siteduplicate/master/CHANGELOG.md",
         "class": "naboo\\siteduplicate\\SiteDuplicatePlugin"

@@ -10,6 +10,7 @@ use craft\events\PluginEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\services\Fields;
 use craft\services\Plugins;
+use craft\helpers\ArrayHelper;
 
 use yii\base\Event;
 
@@ -51,6 +52,11 @@ class SiteDuplicatePlugin extends Plugin
      * @var string
      */
     public $schemaVersion = '1.0.0';
+
+    /**
+     * @var boolean
+     */
+    public $hasCpSettings = true;
 
     // Inheritance
     // =========================================================================
@@ -117,6 +123,21 @@ class SiteDuplicatePlugin extends Plugin
     }
 
     /**
+     * Define settings HTML
+     *
+     * @return template
+     */
+    protected function settingsHtml()
+    {
+        $sections = Craft::$app->sections->getAllSections();
+
+        return \Craft::$app->getView()->renderTemplate('siteduplicate/_settings', [
+            'settings' => $this->getSettings(),
+            'sections' => ArrayHelper::map($sections, 'id', 'name'),
+        ]);
+    }
+
+    /**
      * Handle Control Panel requests. We do it only after we receive the event
      * EVENT_AFTER_LOAD_PLUGINS so that any pending db migrations can be run
      * before our event listeners kick in
@@ -165,14 +186,16 @@ class SiteDuplicatePlugin extends Plugin
 
             $html = '';
 
+            $enabledSections = (is_array($this->getSettings()->enabledSections) ? $this->getSettings()->enabledSections : []);
+
             /** @var  $entry Entry */
             $entry = $context['entry'];
 
-            if($entry !== null && $entry->uri !== null) 
+            if($entry !== null && $entry->uri !== null && in_array($entry->sectionId, $enabledSections) == true) 
             {
                 $sites = SiteDuplicateService::getAvailableSitesForEntry($entry);
 
-                $html .= TemplateHelper::getCpTemplate('siteduplicate/_entrySidebar.twig', ['entry' => $entry, 'options' => $sites]);
+                $html .= TemplateHelper::getCpTemplate('siteduplicate/_widget.twig', ['entry' => $entry, 'options' => $sites]);
             }
 
             return $html;
