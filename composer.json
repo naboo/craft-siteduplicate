@@ -2,7 +2,7 @@
     "name": "naboo/craft-siteduplicate",
     "description": "Site Duplicate let's you duplicate entries across Sites in Craft CMS.",
     "type": "craft-plugin",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "keywords": [
         "craft",
         "cms",
