@@ -129,12 +129,22 @@ class SiteDuplicatePlugin extends Plugin
      */
     protected function settingsHtml()
     {
+        $variables = [
+            'settings' => $this->getSettings(),
+        ];
+
         $sections = Craft::$app->sections->getAllSections();
 
-        return \Craft::$app->getView()->renderTemplate('siteduplicate/_settings', [
-            'settings' => $this->getSettings(),
-            'sections' => ArrayHelper::map($sections, 'id', 'name'),
-        ]);
+        // Remove all Singles
+        foreach($sections as $section)
+        {
+            if($section->type != "single")
+            {
+                $variables['sections'][$section->id] = $section->name;
+            }
+        }
+
+        return \Craft::$app->getView()->renderTemplate('siteduplicate/_settings', $variables);
     }
 
     /**
