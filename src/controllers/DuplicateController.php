@@ -96,7 +96,7 @@ class DuplicateController extends BaseEntriesController
             $entry->enabled
         ) {
             // Make sure they have permission to make live changes to those
-            $this->requirePermission('publishPeerEntries:' . $entry->sectionId);
+            $this->requirePermission('publishPeerEntries:' . $entry->getSection()->uid);
         }
 
         // If we're duplicating the entry, swap $entry with the duplicate
@@ -136,8 +136,8 @@ class DuplicateController extends BaseEntriesController
         // Even more permission enforcement
         if ($entry->enabled) {
             if ($entry->id) {
-                $this->requirePermission('publishEntries:' . $entry->sectionId);
-            } else if (!$currentUser->can('publishEntries:' . $entry->sectionId)) {
+                $this->requirePermission('publishEntries:' . $entry->getSection()->uid);
+            } else if (!$currentUser->can('publishEntries:' . $entry->getSection()->uid)) {
                 $entry->enabled = false;
             }
         }
