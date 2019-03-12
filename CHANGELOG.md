@@ -1,5 +1,9 @@
 # Site Duplicate Changelog
 
+## 1.0.3 - 2019-03-12 #2
+### Changed
+* Fixed sorting of Sites in sidebar widget to be consistent
+
 ## 1.0.2 - 2019-03-12
 ### Changed
 * Set Craft CMS 3.1 as a minimum requirement

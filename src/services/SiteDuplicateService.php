@@ -3,6 +3,7 @@ namespace naboo\siteduplicate\services;
 
 use Craft;
 
+use craft\helpers\ArrayHelper;
 use yii\base\Component;
 
 /**
@@ -54,6 +55,10 @@ class SiteDuplicateService extends Component
             }
         }
 
+        // Sort array
+        ksort($sites, SORT_NUMERIC);
+
+        // Add current site
         $sites["-"] = "-";
         $sites[$entry->siteId] = $currentSite." (".Craft::t('siteduplicate', 'current').")";
 
