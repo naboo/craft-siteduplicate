@@ -1,5 +1,13 @@
 # Site Duplicate Changelog
 
+## 1.1.0 - 2020-08-12
+### Fixed
+* Fixed bug with Site Duplicate not duplicating entries on Craft version 3.4 or larger
+### Changed
+* Site Duplicate now requires Craft 3.4.0
+### Important note
+* Version 1.1.0 does not fix the bug with not being able to duplicate Matrix fields, see https://github.com/naboo/craft-siteduplicate/issues/3
+
 ## 1.0.3 - 2019-03-12 #2
 ### Changed
 * Fixed sorting of Sites in sidebar widget to be consistent
