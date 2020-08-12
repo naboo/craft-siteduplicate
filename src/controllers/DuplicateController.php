@@ -63,34 +63,24 @@ class DuplicateController extends BaseEntriesController
      */
     public function actionIndex()
     {
+        // Force duplication
+        $duplicate = true;
+
         $this->requirePostRequest();
 
         $entry = $this->_getEntryModel();
-        $request = Craft::$app->getRequest();
-
-        $newSiteId = $request->getBodyParam('duplicateSiteId', $entry->siteId); // SET SITE ID -------------------------------------------- * EDITED *
-
-        if($newSiteId == null || $newSiteId == "" || $newSiteId == 0 || $newSiteId == "0" || $newSiteId == "-") // DON'T HAVE A SITE ID? ----------------------- * EDITED *
-        {
-            Craft::$app->getSession()->setError(Craft::t('siteduplicate', 'No Site selected.'));
-
-            Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $entry
-            ]);
-
-            return null;
-        }
-
-        // Are we duplicating the entry?
-        $duplicate = true; // LET'S FORCE THE DUPLICATION --------------------------------------------------------------------------------- * EDITED *
+        $entryVariable = $this->request->getValidatedBodyParam('entryVariable') ?? 'entry';
+        $newSiteId = $this->request->getBodyParam('duplicateSiteId', $entry->siteId);
 
         // Permission enforcement
+        $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
         $currentUser = Craft::$app->getUser()->getIdentity();
 
         // Is this another user's entry (and it's not a Single)?
         if (
             $entry->id &&
+            !$duplicate &&
             $entry->authorId != $currentUser->id &&
             $entry->getSection()->type !== Section::TYPE_SINGLE &&
             $entry->enabled
@@ -99,22 +89,29 @@ class DuplicateController extends BaseEntriesController
             $this->requirePermission('publishPeerEntries:' . $entry->getSection()->uid);
         }
 
+        // Keep track of whether the entry was disabled as a result of duplication
+        $forceDisabled = false;
+
         // If we're duplicating the entry, swap $entry with the duplicate
         if ($duplicate) {
             try {
+                $wasEnabled = $entry->enabled;
                 $entry = Craft::$app->getElements()->duplicateElement($entry);
+                if ($wasEnabled && !$entry->enabled) {
+                    $forceDisabled = true;
+                }
             } catch (InvalidElementException $e) {
                 /** @var Entry $clone */
                 $clone = $e->element;
 
-                if ($request->getAcceptsJson()) {
+                if ($this->request->getAcceptsJson()) {
                     return $this->asJson([
                         'success' => false,
                         'errors' => $clone->getErrors(),
                     ]);
                 }
 
-                Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t duplicate entry.'));
+                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate entry.'));
 
                 // Send the original entry back to the template, with any validation errors on the clone
                 $entry->addErrors($clone->getErrors());
@@ -128,10 +125,15 @@ class DuplicateController extends BaseEntriesController
             }
         }
 
-        $entry->siteId = $newSiteId; // SET SITE ID --------------------------------------------------------------------------------------- * EDITED *
+        // Set new site ID
+        $entry->siteId = $newSiteId;
 
         // Populate the entry with post data
         $this->_populateEntryModel($entry);
+
+        if ($forceDisabled) {
+            $entry->enabled = false;
+        }
 
         // Even more permission enforcement
         if ($entry->enabled) {
@@ -142,47 +144,36 @@ class DuplicateController extends BaseEntriesController
             }
         }
 
-        // WE WILL NEVER HAVE ANY VERSIONS SINCE THIS IF THE FIRST ENTRY ------------------------------------------------------------------ * EDITED *
-
-        // Make sure the entry has at least one version if the section has versioning enabled
-        /*$revisionsService = Craft::$app->getEntryRevisions();
-        if ($entry->getSection()->enableVersioning && $entry->id && !$revisionsService->doesEntryHaveVersions($entry->id, $entry->siteId)) {
-            $currentEntry = Craft::$app->getEntries()->getEntryById($entry->id, $entry->siteId);
-            $currentEntry->revisionCreatorId = $entry->authorId;
-            $currentEntry->revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($entry->dateUpdated);
-            $revisionsService->saveVersion($currentEntry);
-        }*/
-
         // Save the entry (finally!)
-        if ($entry->enabled && $entry->enabledForSite) {
+        if ($entry->enabled && $entry->getEnabledForSite()) {
             $entry->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($entry)) {
-            if ($request->getAcceptsJson()) {
+        try {
+            $success = Craft::$app->getElements()->saveElement($entry);
+        } catch (UnsupportedSiteException $e) {
+            $entry->addError('siteId', $e->getMessage());
+            $success = false;
+        }
+
+        if (!$success) {
+            if ($this->request->getAcceptsJson()) {
                 return $this->asJson([
                     'errors' => $entry->getErrors(),
                 ]);
             }
 
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save entry.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
 
             // Send the entry back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'entry' => $entry
+                $entryVariable => $entry
             ]);
 
             return null;
         }
 
-        // WE WILL NEVER HAVE ANY VERSIONS SINCE THIS IF THE FIRST ENTRY ------------------------------------------------------------------ * EDITED *
-
-        // Should we save a new version?
-        /*if ($entry->getSection()->enableVersioning) {
-            $revisionsService->saveVersion($entry);
-        }*/
-
-        if ($request->getAcceptsJson()) {
+        if ($this->request->getAcceptsJson()) {
             $return = [];
 
             $return['success'] = true;
@@ -190,7 +181,7 @@ class DuplicateController extends BaseEntriesController
             $return['title'] = $entry->title;
             $return['slug'] = $entry->slug;
 
-            if ($request->getIsCpRequest()) {
+            if ($this->request->getIsCpRequest()) {
                 $return['cpEditUrl'] = $entry->getCpEditUrl();
             }
 
@@ -205,8 +196,7 @@ class DuplicateController extends BaseEntriesController
             return $this->asJson($return);
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Entry saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Entry saved.'));
         return $this->redirectToPostedUrl($entry);
     }
 
@@ -216,28 +206,31 @@ class DuplicateController extends BaseEntriesController
     /**
      * Populates an Entry with post data.
      *
-     * THIS FUNCTION IS A DIRECT COPY from controllers/EntriesController in Craft core
+     * [This function is copied from controllers/EntriesController in Craft core]
      *
      * @param Entry $entry
      */
     private function _populateEntryModel(Entry $entry)
     {
-        $request = Craft::$app->getRequest();
-
         // Set the entry attributes, defaulting to the existing values for whatever is missing from the post data
-        $entry->typeId = $request->getBodyParam('typeId', $entry->typeId);
-        $entry->slug = $request->getBodyParam('slug', $entry->slug);
-        if (($postDate = $request->getBodyParam('postDate')) !== null) {
+        $entry->typeId = $this->request->getBodyParam('typeId', $entry->typeId);
+        $entry->slug = $this->request->getBodyParam('slug', $entry->slug);
+        if (($postDate = $this->request->getBodyParam('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate) ?: null;
         }
-        if (($expiryDate = $request->getBodyParam('expiryDate')) !== null) {
+        if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate) ?: null;
         }
-        $entry->enabled = (bool)$request->getBodyParam('enabled', $entry->enabled);
-        $entry->enabledForSite = $entry->getSection()->getHasMultiSiteEntries()
-            ? (bool)$request->getBodyParam('enabledForSite', $entry->enabledForSite)
-            : true;
-        $entry->title = $request->getBodyParam('title', $entry->title);
+
+        $enabledForSite = $this->enabledForSiteValue();
+        if (is_array($enabledForSite)) {
+            // Set the global status to true if it's enabled for *any* sites, or if already enabled.
+            $entry->enabled = in_array(true, $enabledForSite, false) || $entry->enabled;
+        } else {
+            $entry->enabled = (bool)$this->request->getBodyParam('enabled', $entry->enabled);
+        }
+        $entry->setEnabledForSite($enabledForSite ?? $entry->getEnabledForSite());
+        $entry->title = $this->request->getBodyParam('title', $entry->title);
 
         if (!$entry->typeId) {
             // Default to the section's first entry type
@@ -247,11 +240,11 @@ class DuplicateController extends BaseEntriesController
         // Prevent the last entry type's field layout from being used
         $entry->fieldLayoutId = null;
 
-        $fieldsLocation = $request->getParam('fieldsLocation', 'fields');
+        $fieldsLocation = $this->request->getParam('fieldsLocation', 'fields');
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Author
-        $authorId = $request->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
+        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
 
         if (is_array($authorId)) {
             $authorId = $authorId[0] ?? null;
@@ -259,34 +252,31 @@ class DuplicateController extends BaseEntriesController
 
         $entry->authorId = $authorId;
 
-        // WE WILL NEVER HAVE ANY PARENTS SINCE THIS IF THE FIRST ENTRY ---------------------------------------------------------------- * EDITED *
-
         // Parent
-        /*if (($parentId = $request->getBodyParam('parentId')) !== null) {
+        if (($parentId = $this->request->getBodyParam('parentId')) !== null) {
             if (is_array($parentId)) {
                 $parentId = reset($parentId) ?: '';
             }
 
             $entry->newParentId = $parentId ?: '';
-        }*/
+        }
 
         // Revision notes
-        $entry->revisionNotes = $request->getBodyParam('revisionNotes');
+        $entry->setRevisionNotes($this->request->getBodyParam('revisionNotes'));
     }
 
     /**
      * Fetches or creates an Entry.
      *
-     * THIS FUNCTION IS A DIRECT COPY from controllers/EntriesController in Craft core
+     * [This function is copied from controllers/EntriesController in Craft core]
      *
      * @return Entry
      * @throws NotFoundHttpException if the requested entry cannot be found
      */
     private function _getEntryModel(): Entry
     {
-        $request = Craft::$app->getRequest();
-        $entryId = $request->getBodyParam('entryId');
-        $siteId = $request->getBodyParam('siteId');
+        $entryId = $this->request->getBodyParam('draftId') ?? $this->request->getBodyParam('sourceId') ?? $this->request->getBodyParam('entryId');
+        $siteId = $this->request->getBodyParam('siteId');
 
         if ($entryId) {
             $entry = Craft::$app->getEntries()->getEntryById($entryId, $siteId);
@@ -296,7 +286,7 @@ class DuplicateController extends BaseEntriesController
             }
         } else {
             $entry = new Entry();
-            $entry->sectionId = $request->getRequiredBodyParam('sectionId');
+            $entry->sectionId = $this->request->getRequiredBodyParam('sectionId');
 
             if ($siteId) {
                 $entry->siteId = $siteId;

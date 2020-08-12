@@ -2,22 +2,25 @@
 
 {% if options|length > 1 %}
 <style>
-	.siteduplicate-input {
+	.data-sd {
+		padding: 15px 0;
+	}
+	.sd-input {
 		width: 100%;
 		margin-top: 6px;
 		margin-bottom: 15px;
 	}
-	.siteduplicate-input .select {
+	.sd-input .select {
 		width: 100%;
 		display: block;
 	}
-	.siteduplicate-input .select select {
+	.sd-input .select select {
 		width: 100%;
 	}
 </style>
 
 <div class="meta" id="site-duplicate">
-	<div class="data">
+	<div class="data-sd">
 
 		<h5>{{ 'Duplicate entry to another Site'|t('siteduplicate') }}</h5>
 
@@ -26,7 +29,7 @@
 		Section ID: {{ entry.sectionId }}
 		#}
 
-		<div class="input siteduplicate-input">
+		<div class="input sd-input">
 			{{ forms.select({
 		        fieldClass: '',
 		        class: '',
