@@ -1,8 +1,12 @@
 # Site Duplicate Changelog
 
+## 1.1.1 - 2020-08-13
+### Fixed
+* Fixed the requirement with Craft version 3.4 or higher being fixed to specific version 3.4.0
+
 ## 1.1.0 - 2020-08-12
 ### Fixed
-* Fixed bug with Site Duplicate not duplicating entries on Craft version 3.4 or larger
+* Fixed bug with Site Duplicate not duplicating entries on Craft version 3.4 or higher
 ### Changed
 * Site Duplicate now requires Craft 3.4.0
 ### Important note
